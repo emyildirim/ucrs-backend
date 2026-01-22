@@ -1,0 +1,465 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "University Course Registration System API",
+    "description": "RESTful API for the University Course Registration System (UCRS). This API provides endpoints for authentication, course management, student registration, and administrative functions.",
+    "contact": {
+      "name": "UCRS API Support",
+      "email": "admin@ucrs.edu",
+      "url": "https://ucrs.edu/support"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local Development Server"
+    },
+    {
+      "url": "http://127.0.0.1:8000",
+      "description": "Alternative Local Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and token management endpoints"
+    },
+    {
+      "name": "General",
+      "description": "General API information and health check endpoints"
+    }
+  ],
+  "paths": {
+    "/api/hello": {
+      "get": {
+        "tags": ["General"],
+        "summary": "Hello World endpoint",
+        "description": "Returns a simple hello world message with API information",
+        "operationId": "getHello",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Hello World from University Course Registration System API"
+                    },
+                    "version": {
+                      "type": "string",
+                      "example": "1.0.0"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-01-21T20:10:55+00:00"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user",
+        "description": "Create a new user account and receive an access token for immediate authentication",
+        "operationId": "register",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password", "password_confirmation"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "User's full name",
+                    "example": "John Doe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address (must be unique)",
+                    "example": "john@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "description": "User's password (minimum 8 characters)",
+                    "example": "password123"
+                  },
+                  "password_confirmation": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "Password confirmation (must match password)",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "examples": {
+                  "email_exists": {
+                    "summary": "Email already exists",
+                    "value": {
+                      "message": "The given data was invalid.",
+                      "errors": {
+                        "email": ["The email has already been taken."]
+                      }
+                    }
+                  },
+                  "password_mismatch": {
+                    "summary": "Password confirmation mismatch",
+                    "value": {
+                      "message": "The given data was invalid.",
+                      "errors": {
+                        "password": ["The password confirmation does not match."]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login user",
+        "description": "Authenticate user with email and password, and receive a Bearer token for API access",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address",
+                    "example": "john@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "User's password",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                },
+                "example": {
+                  "user": {
+                    "id": 1,
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "email_verified_at": null,
+                    "created_at": "2026-01-21T20:53:19.000000Z",
+                    "updated_at": "2026-01-21T20:53:19.000000Z"
+                  },
+                  "access_token": "1|abcdef123456789",
+                  "token_type": "Bearer"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                },
+                "example": {
+                  "message": "The given data was invalid.",
+                  "errors": {
+                    "email": ["The provided credentials are incorrect."]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get authenticated user",
+        "description": "Returns the currently authenticated user's profile information",
+        "operationId": "getAuthenticatedUser",
+        "security": [
+          {
+            "sanctum": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Unauthenticated."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Logout user",
+        "description": "Revoke the current access token (logout from current device)",
+        "operationId": "logout",
+        "security": [
+          {
+            "sanctum": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logged out successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Logged out successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          }
+        }
+      }
+    },
+    "/api/auth/logout-all": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Logout from all devices",
+        "description": "Revoke all access tokens for the authenticated user (logout from all devices)",
+        "operationId": "logoutAll",
+        "security": [
+          {
+            "sanctum": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logged out from all devices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Logged out from all devices"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          }
+        }
+      }
+    },
+    "/api/user": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get authenticated user (alternative endpoint)",
+        "description": "Returns the currently authenticated user's information",
+        "operationId": "getUser",
+        "security": [
+          {
+            "sanctum": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sanctum": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Token",
+        "description": "Enter your Bearer token (obtained from /api/auth/login or /api/auth/register)"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "required": ["id", "name", "email"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "User ID",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address",
+            "example": "john@example.com"
+          },
+          "email_verified_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Email verification timestamp",
+            "example": null
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Account creation timestamp",
+            "example": "2026-01-21T20:53:19.000000Z"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp",
+            "example": "2026-01-21T20:53:19.000000Z"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "access_token": {
+            "type": "string",
+            "description": "Bearer access token for API authentication",
+            "example": "1|abcdef123456789"
+          },
+          "token_type": {
+            "type": "string",
+            "description": "Token type (always 'Bearer')",
+            "example": "Bearer"
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "General error message",
+            "example": "The given data was invalid."
+          },
+          "errors": {
+            "type": "object",
+            "description": "Field-specific validation errors",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "example": {
+              "email": ["The email field is required."]
+            }
+          }
+        }
+      }
+    }
+  }
+}
