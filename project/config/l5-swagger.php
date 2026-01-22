@@ -207,8 +207,8 @@ return [
                     'authorizationUrl' => 'http://example.com/auth', // The authorization URL to be used for (implicit/accessCode)
                     //'tokenUrl' => 'http://example.com/auth' // The authorization URL to be used for (password/application/accessCode)
                     'scopes' => [
-                        'read:projects' => 'read your projects',
-                        'write:projects' => 'modify projects in your account',
+                        'read:projects' => 'read projects',
+                        'write:projects' => 'modify projects',
                     ]
                 ],
                 */
@@ -304,12 +304,9 @@ return [
                 'doc_expansion' => env('L5_SWAGGER_UI_DOC_EXPANSION', 'none'),
 
                 /**
-                 * If set, enables filtering. The top bar will show an edit box that
-                 * you can use to filter the tagged operations that are shown. Can be
-                 * Boolean to enable or disable, or a string, in which case filtering
-                 * will be enabled using that string as the filter expression. Filtering
-                 * is case-sensitive matching the filter expression anywhere inside
-                 * the tag.
+                 * Enables filtering. The top bar shows an edit box to filter tagged operations.
+                 * Can be Boolean or string. Filtering is case-sensitive matching the filter
+                 * expression anywhere inside the tag.
                  */
                 'filter' => env('L5_SWAGGER_UI_FILTERS', true), // true | false
             ],

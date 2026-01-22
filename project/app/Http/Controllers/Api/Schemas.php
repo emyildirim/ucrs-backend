@@ -97,5 +97,5 @@ namespace App\Http\Controllers\Api;
  */
 class Schemas
 {
-    // This class only contains OpenAPI schema definitions
+    // OpenAPI schema definitions
 }

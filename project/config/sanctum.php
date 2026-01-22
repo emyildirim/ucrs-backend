@@ -9,9 +9,8 @@ return [
     | Stateful Domains
     |--------------------------------------------------------------------------
     |
-    | Requests from the following domains / hosts will receive stateful API
-    | authentication cookies. Typically, these should include your local
-    | and production domains which access your API via a frontend SPA.
+    | Domains that will receive stateful API authentication cookies.
+    | Typically includes local and production domains for frontend SPA.
     |
     */
 
@@ -27,10 +26,8 @@ return [
     | Sanctum Guards
     |--------------------------------------------------------------------------
     |
-    | This array contains the authentication guards that will be checked when
-    | Sanctum is trying to authenticate a request. If none of these guards
-    | are able to authenticate the request, Sanctum will use the bearer
-    | token that's present on an incoming request for authentication.
+    | Authentication guards checked during Sanctum authentication.
+    | Falls back to bearer token if guards fail to authenticate.
     |
     */
 
@@ -69,9 +66,7 @@ return [
     | Sanctum Middleware
     |--------------------------------------------------------------------------
     |
-    | When authenticating your first-party SPA with Sanctum you may need to
-    | customize some of the middleware Sanctum uses while processing the
-    | request. You may change the middleware listed below as required.
+    | Middleware used by Sanctum for first-party SPA authentication.
     |
     */
 
