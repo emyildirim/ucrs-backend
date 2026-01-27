@@ -23,8 +23,8 @@ REGISTER_RESPONSE=$(curl -s -X POST "$API_URL/auth/register" \
   -d '{
     "name": "Test User",
     "email": "testuser@example.com",
-    "password": "password123",
-    "password_confirmation": "password123"
+    "password": "password",
+    "password_confirmation": "password"
   }')
 
 echo "$REGISTER_RESPONSE" | jq .
@@ -48,7 +48,7 @@ LOGIN_RESPONSE=$(curl -s -X POST "$API_URL/auth/login" \
   -H "$ACCEPT" \
   -d '{
     "email": "testuser@example.com",
-    "password": "password123"
+    "password": "password"
   }')
 
 echo "$LOGIN_RESPONSE" | jq .

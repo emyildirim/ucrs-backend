@@ -181,7 +181,7 @@
                     "type": "string",
                     "format": "password",
                     "description": "User's password",
-                    "example": "password123"
+                    "example": ""
                   }
                 }
               }
