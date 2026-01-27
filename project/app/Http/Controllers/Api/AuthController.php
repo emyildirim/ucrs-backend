@@ -32,21 +32,31 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role_id' => ['sometimes', 'integer', 'exists:roles,role_id'],
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
+            'role_id' => $validated['role_id'] ?? 3,
+            'full_name' => $validated['full_name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password_hash' => Hash::make($validated['password']),
+            'status' => 'active',
         ]);
 
+        $user->load('role');
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => [
+                'user_id' => $user->user_id,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'role' => $user->role->name,
+                'status' => $user->status,
+            ],
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 201);
@@ -78,16 +88,29 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password_hash)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
+        if ($user->status !== 'active') {
+            throw ValidationException::withMessages([
+                'email' => ['Account is not active.'],
+            ]);
+        }
+
+        $user->load('role');
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => [
+                'user_id' => $user->user_id,
+                'full_name' => $user->full_name,
+                'email' => $user->email,
+                'role' => $user->role->name,
+                'status' => $user->status,
+            ],
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]);
@@ -143,6 +166,16 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        $user = $request->user();
+        $user->load('role');
+
+        return response()->json([
+            'user_id' => $user->user_id,
+            'full_name' => $user->full_name,
+            'email' => $user->email,
+            'role' => $user->role->name,
+            'status' => $user->status,
+            'created_at' => $user->created_at,
+        ]);
     }
 }
