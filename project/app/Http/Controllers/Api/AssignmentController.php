@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\Course;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AssignmentController extends Controller
 {
@@ -48,20 +49,45 @@ class AssignmentController extends Controller
 
     public function update(Request $request, string $id)
     {
-        $assignment = Assignment::findOrFail($id);
-        $before = $assignment->toArray();
+        try {
+            $assignment = Assignment::findOrFail($id);
+            $before = $assignment->toArray();
 
-        $validated = $request->validate([
-            'title' => ['sometimes', 'string', 'max:255'],
-            'description' => ['sometimes', 'string'],
-            'due_at' => ['sometimes', 'date'],
-            'max_points' => ['sometimes', 'integer', 'min:1'],
-        ]);
+            $validated = $request->validate([
+                'title' => ['sometimes', 'string', 'max:255'],
+                'description' => ['sometimes', 'string'],
+                'due_at' => ['sometimes', 'date'],
+                'max_points' => ['sometimes', 'integer', 'min:1'],
+            ]);
 
-        $assignment->update($validated);
+            $assignment->update($validated);
 
-        AuditLog::log('update', 'Assignment', $before, $assignment->fresh()->toArray());
+            AuditLog::log('update', 'Assignment', $before, $assignment->fresh()->toArray());
 
-        return response()->json($assignment);
+            return response()->json([
+                'message' => 'Assignment updated successfully',
+                'data' => $assignment
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to update assignment: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to update assignment'], 500);
+        }
+    }
+
+    public function destroy(string $id)
+    {
+        try {
+            $assignment = Assignment::findOrFail($id);
+            $before = $assignment->toArray();
+
+            $assignment->delete();
+
+            AuditLog::log('delete', 'Assignment', $before, null);
+
+            return response()->json(['message' => 'Assignment deleted successfully']);
+        } catch (\Exception $e) {
+            Log::error('Failed to delete assignment: ' . $e->getMessage());
+            return response()->json(['message' => 'Failed to delete assignment'], 500);
+        }
     }
 }
