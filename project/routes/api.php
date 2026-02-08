@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\AssignmentController;
@@ -36,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/enrollments/{id}', [EnrollmentController::class, 'destroy']);
         Route::post('/assignments/{assignmentId}/submit', [SubmissionController::class, 'submit']);
         Route::get('/submissions/my-submissions', [SubmissionController::class, 'mySubmissions']);
+        Route::put('/submissions/{id}', [SubmissionController::class, 'update']);
     });
 
     // Instructor and Admin routes
@@ -44,12 +46,29 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/courses/{id}', [CourseController::class, 'update']);
         Route::post('/courses/{courseId}/assignments', [AssignmentController::class, 'store']);
         Route::put('/assignments/{id}', [AssignmentController::class, 'update']);
+        Route::delete('/assignments/{id}', [AssignmentController::class, 'destroy']);
+        Route::get('/submissions', [SubmissionController::class, 'index']);
+        Route::get('/submissions/{id}', [SubmissionController::class, 'show']);
         Route::put('/submissions/{id}/grade', [SubmissionController::class, 'grade']);
     });
 
     // Admin only routes
     Route::middleware('role:Admin')->group(function () {
+        // Users management
+        Route::get('/users', [UserController::class, 'index']);
+        Route::post('/users', [UserController::class, 'store']);
+        Route::get('/users/{id}', [UserController::class, 'show']);
+        Route::put('/users/{id}', [UserController::class, 'update']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        
+        // Course management
         Route::delete('/courses/{id}', [CourseController::class, 'destroy']);
+        
+        // Enrollment management
+        Route::get('/enrollments', [EnrollmentController::class, 'index']);
+        Route::put('/enrollments/{id}', [EnrollmentController::class, 'update']);
+        
+        // Audit logs
         Route::get('/audit-logs', [AuditLogController::class, 'index']);
     });
 });
