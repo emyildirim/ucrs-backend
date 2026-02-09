@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\EnrollmentController;
@@ -22,6 +23,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
+    });
+
+    // Account management (all authenticated users)
+    Route::prefix('account')->group(function () {
+        Route::get('/profile', [AccountController::class, 'profile']);
+        Route::put('/profile', [AccountController::class, 'updateProfile']);
+        Route::put('/password', [AccountController::class, 'changePassword']);
     });
 
     // Courses (all authenticated users can view)
