@@ -7,9 +7,41 @@ use App\Models\Course;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 class CourseController extends Controller
 {
+    #[OA\Get(
+        path: '/courses',
+        summary: 'List all courses',
+        description: 'Get paginated list of courses (all authenticated users)',
+        security: [['sanctum' => []]],
+        tags: ['Courses'],
+        parameters: [
+            new OA\Parameter(
+                name: 'per_page',
+                in: 'query',
+                description: 'Items per page',
+                schema: new OA\Schema(type: 'integer', default: 15)
+            ),
+            new OA\Parameter(
+                name: 'search',
+                in: 'query',
+                description: 'Search by title or code',
+                schema: new OA\Schema(type: 'string')
+            ),
+            new OA\Parameter(
+                name: 'show_all',
+                in: 'query',
+                description: 'Show inactive courses',
+                schema: new OA\Schema(type: 'boolean', default: false)
+            )
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Courses retrieved successfully'),
+            new OA\Response(response: 401, description: 'Unauthenticated')
+        ]
+    )]
     public function index(Request $request)
     {
         try {
@@ -39,6 +71,29 @@ class CourseController extends Controller
         }
     }
 
+    #[OA\Post(
+        path: '/courses',
+        summary: 'Create course',
+        description: 'Create a new course (Instructor/Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Courses'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['title', 'code', 'instructor_id'],
+                properties: [
+                    new OA\Property(property: 'title', type: 'string', example: 'Introduction to CS'),
+                    new OA\Property(property: 'code', type: 'string', example: 'CS101'),
+                    new OA\Property(property: 'instructor_id', type: 'integer', example: 2)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Course created successfully'),
+            new OA\Response(response: 403, description: 'Forbidden (Instructor/Admin only)'),
+            new OA\Response(response: 422, description: 'Validation error')
+        ]
+    )]
     public function store(Request $request)
     {
         try {
@@ -62,6 +117,25 @@ class CourseController extends Controller
         }
     }
 
+    #[OA\Get(
+        path: '/courses/{id}',
+        summary: 'Get course',
+        description: 'Get course by ID with instructor info',
+        security: [['sanctum' => []]],
+        tags: ['Courses'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Course found'),
+            new OA\Response(response: 404, description: 'Course not found')
+        ]
+    )]
     public function show(string $id)
     {
         try {
@@ -73,6 +147,36 @@ class CourseController extends Controller
         }
     }
 
+    #[OA\Put(
+        path: '/courses/{id}',
+        summary: 'Update course',
+        description: 'Update course information (Instructor/Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Courses'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'title', type: 'string'),
+                    new OA\Property(property: 'code', type: 'string'),
+                    new OA\Property(property: 'instructor_id', type: 'integer'),
+                    new OA\Property(property: 'is_active', type: 'boolean')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Course updated successfully'),
+            new OA\Response(response: 404, description: 'Course not found'),
+            new OA\Response(response: 422, description: 'Validation error')
+        ]
+    )]
     public function update(Request $request, string $id)
     {
         try {
@@ -101,6 +205,25 @@ class CourseController extends Controller
         }
     }
 
+    #[OA\Delete(
+        path: '/courses/{id}',
+        summary: 'Delete course',
+        description: 'Delete course by ID (Admin only)',
+        security: [['sanctum' => []]],
+        tags: ['Courses'],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(type: 'integer')
+            )
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Course deleted successfully'),
+            new OA\Response(response: 404, description: 'Course not found')
+        ]
+    )]
     public function destroy(string $id)
     {
         try {

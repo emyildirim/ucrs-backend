@@ -8,9 +8,35 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use OpenApi\Attributes as OA;
 
 class AccountController extends Controller
 {
+    #[OA\Get(
+        path: '/account/profile',
+        summary: 'Get user profile',
+        description: 'Get current user profile information',
+        security: [['sanctum' => []]],
+        tags: ['Account'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Profile retrieved successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'user_id', type: 'integer'),
+                        new OA\Property(property: 'full_name', type: 'string'),
+                        new OA\Property(property: 'email', type: 'string'),
+                        new OA\Property(property: 'role', type: 'string'),
+                        new OA\Property(property: 'role_id', type: 'integer'),
+                        new OA\Property(property: 'status', type: 'string'),
+                        new OA\Property(property: 'created_at', type: 'string', format: 'date-time')
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Unauthenticated')
+        ]
+    )]
     public function profile(Request $request)
     {
         try {
@@ -32,6 +58,34 @@ class AccountController extends Controller
         }
     }
 
+    #[OA\Put(
+        path: '/account/profile',
+        summary: 'Update user profile',
+        description: 'Update current user profile information',
+        security: [['sanctum' => []]],
+        tags: ['Account'],
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'full_name', type: 'string', example: 'John Doe Updated'),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'newemail@ucrs.edu')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Profile updated successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Validation error')
+        ]
+    )]
     public function updateProfile(Request $request)
     {
         try {
@@ -57,6 +111,36 @@ class AccountController extends Controller
         }
     }
 
+    #[OA\Put(
+        path: '/account/password',
+        summary: 'Change password',
+        description: 'Change user account password',
+        security: [['sanctum' => []]],
+        tags: ['Account'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['current_password', 'new_password', 'new_password_confirmation'],
+                properties: [
+                    new OA\Property(property: 'current_password', type: 'string', format: 'password'),
+                    new OA\Property(property: 'new_password', type: 'string', format: 'password', minLength: 8),
+                    new OA\Property(property: 'new_password_confirmation', type: 'string', format: 'password')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Password changed successfully',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'message', type: 'string', example: 'Password changed successfully')
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Validation error')
+        ]
+    )]
     public function changePassword(Request $request)
     {
         try {

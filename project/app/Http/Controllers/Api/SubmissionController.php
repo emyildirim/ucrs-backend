@@ -8,9 +8,25 @@ use App\Models\Assignment;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 class SubmissionController extends Controller
 {
+    #[OA\Get(
+        path: '/submissions',
+        summary: 'List all submissions',
+        description: 'Get paginated list of all submissions (Instructor/Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Submissions'],
+        parameters: [
+            new OA\Parameter(name: 'per_page', in: 'query', schema: new OA\Schema(type: 'integer', default: 15)),
+            new OA\Parameter(name: 'search', in: 'query', schema: new OA\Schema(type: 'string'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Submissions retrieved'),
+            new OA\Response(response: 403, description: 'Forbidden')
+        ]
+    )]
     public function index(Request $request)
     {
         try {
@@ -34,6 +50,20 @@ class SubmissionController extends Controller
         }
     }
 
+    #[OA\Get(
+        path: '/submissions/{id}',
+        summary: 'Get submission details',
+        description: 'Get specific submission with details (Instructor/Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Submissions'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Submission details'),
+            new OA\Response(response: 404, description: 'Submission not found')
+        ]
+    )]
     public function show(string $id)
     {
         try {
@@ -45,6 +75,30 @@ class SubmissionController extends Controller
         }
     }
 
+    #[OA\Post(
+        path: '/assignments/{assignmentId}/submit',
+        summary: 'Submit assignment',
+        description: 'Create new submission for assignment (Student)',
+        security: [['sanctum' => []]],
+        tags: ['Submissions'],
+        parameters: [
+            new OA\Parameter(name: 'assignmentId', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['content_url'],
+                properties: [
+                    new OA\Property(property: 'content_url', type: 'string', format: 'url', example: 'https://example.com/submission.pdf')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Submission created'),
+            new OA\Response(response: 422, description: 'Already submitted or validation error'),
+            new OA\Response(response: 404, description: 'Assignment not found')
+        ]
+    )]
     public function submit(Request $request, string $assignmentId)
     {
         try {
@@ -80,6 +134,30 @@ class SubmissionController extends Controller
         }
     }
 
+    #[OA\Put(
+        path: '/submissions/{id}',
+        summary: 'Update submission',
+        description: 'Update submission content (Student, before grading)',
+        security: [['sanctum' => []]],
+        tags: ['Submissions'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['content_url'],
+                properties: [
+                    new OA\Property(property: 'content_url', type: 'string', format: 'url')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Submission updated'),
+            new OA\Response(response: 403, description: 'Cannot update graded submission'),
+            new OA\Response(response: 404, description: 'Submission not found')
+        ]
+    )]
     public function update(Request $request, string $id)
     {
         try {
@@ -108,6 +186,17 @@ class SubmissionController extends Controller
         }
     }
 
+    #[OA\Get(
+        path: '/submissions/my-submissions',
+        summary: 'Get my submissions',
+        description: 'Get all submissions for current student',
+        security: [['sanctum' => []]],
+        tags: ['Submissions'],
+        responses: [
+            new OA\Response(response: 200, description: 'My submissions retrieved'),
+            new OA\Response(response: 401, description: 'Unauthenticated')
+        ]
+    )]
     public function mySubmissions(Request $request)
     {
         $submissions = Submission::with(['assignment.course', 'grader'])
@@ -117,6 +206,30 @@ class SubmissionController extends Controller
         return response()->json($submissions);
     }
 
+    #[OA\Put(
+        path: '/submissions/{id}/grade',
+        summary: 'Grade submission',
+        description: 'Assign grade to submission (Instructor/Admin)',
+        security: [['sanctum' => []]],
+        tags: ['Submissions'],
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['score'],
+                properties: [
+                    new OA\Property(property: 'score', type: 'number', format: 'float', example: 95)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Submission graded'),
+            new OA\Response(response: 404, description: 'Submission not found'),
+            new OA\Response(response: 422, description: 'Validation error')
+        ]
+    )]
     public function grade(Request $request, string $id)
     {
         try {

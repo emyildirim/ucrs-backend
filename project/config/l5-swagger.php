@@ -36,8 +36,8 @@ return [
                 'docs_yaml' => 'api-docs.yaml',
 
                 /*
-                 * Set this to `json` or `yaml` to determine which documentation file to use in UI
-                 */
+                * Set this to `json` or `yaml` to determine which documentation file to use in UI
+                */
                 'format_to_use_for_docs' => env('L5_FORMAT_TO_USE_FOR_DOCS', 'json'),
 
                 /*
@@ -46,6 +46,11 @@ return [
                 'annotations' => [
                     base_path('app/Http/Controllers'),
                 ],
+
+                /*
+                 * Absolute paths to directories that should be excluded from scanning
+                 */
+                'excludes' => [],
 
                 /*
                  * Absolute path to directory where to export views
